@@ -310,7 +310,7 @@ impl Display for CSStruct {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         writeln!(f, "[Serializable]")?;
         writeln!(f, "[StructLayout(LayoutKind.Sequential)]")?;
-        writeln!(f, "{} struct {} {{", self.cfg.access, self.name)?;
+        writeln!(f, "{} unsafe struct {} {{", self.cfg.access, self.name)?;
         for field in self.fields.iter() {
             writeln!(f, "{}{} {};", INDENT, self.cfg.access, field.to_string())?;
         }
@@ -319,7 +319,7 @@ impl Display for CSStruct {
             self.fields.iter().map(|field| field.to_string()).collect();
         writeln!(
             f,
-            "\n{}{} {}({}) {{",
+            "\n{}{} unsafe {}({}) {{",
             INDENT,
             self.cfg.access,
             self.name,
