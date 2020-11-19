@@ -557,7 +557,7 @@ impl Display for CSFile {
         }
 
         for (name, d) in self.delegate_defs.iter() {
-            writeln!(f, "[UnmanagedFunctionPointer(CallingConvention.Cdecl)]")?;
+            writeln!(f, "{}[UnmanagedFunctionPointer(CallingConvention.Cdecl)]",INDENT)?;
             write!(
                 f,
                 "{}{} delegate {} {}(",
