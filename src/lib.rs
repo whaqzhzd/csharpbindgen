@@ -180,7 +180,7 @@ impl Display for CSType {
         if self.is_ptr {
             match &self.descr {
                 CSTyDescr::Struct(_s) => write!(f, "ref {}", name),
-                _ => write!(f, "IntPtr /* {} */", name),
+                _ => write!(f, "void* /* {} */", name),
             }
         } else {
             write!(f, "{}", name)
@@ -557,6 +557,7 @@ impl Display for CSFile {
         }
 
         for (name, d) in self.delegate_defs.iter() {
+            writeln!(f, "[UnmanagedFunctionPointer(CallingConvention.Cdecl)]")?;
             write!(
                 f,
                 "{}{} delegate {} {}(",
@@ -576,7 +577,7 @@ impl Display for CSFile {
         }
 
         for func in self.funcs.iter() {
-            writeln!(f, "{}[DllImport(\"{}\")]", INDENT, self.dll_name)?;
+            writeln!(f, "{}[DllImport(\"{}\", CallingConvention = CallingConvention.Cdecl)]", INDENT, self.dll_name)?;
             writeln!(f, "{}{}\n", INDENT, func)?;
         }
         writeln!(f, "}}")
@@ -700,18 +701,18 @@ fn munge_cs_name(name: String) -> String {
 
 fn to_cs_primitive<'a>(type_name: &'a str) -> &'a str {
     match type_name {
-        "i8" => "SByte",
-        "u8" => "Byte",
-        "i16" => "Int16",
-        "u16" => "UInt16",
-        "i32" => "Int32",
-        "u32" => "UInt32",
-        "u64" => "Int64",
-        "i64" => "UInt64",
-        "isize" => "IntPtr",
-        "usize" => "UIntPtr",
-        "f32" => "Single",
-        "f64" => "Double",
+        "i8" => "sbyte",
+        "u8" => "byte",
+        "i16" => "short",
+        "u16" => "ushort",
+        "i32" => "int",
+        "u32" => "uint",
+        "u64" => "long",
+        "i64" => "ulong",
+        "isize" => "uint",
+        "usize" => "uint",
+        "f32" => "float",
+        "f64" => "double",
         _ => type_name,
     }
 }
