@@ -110,7 +110,6 @@ impl CSTypeDef {
 struct CSType {
     name: String,
     is_ptr: bool,
-
     descr: CSTyDescr,
 }
 
@@ -577,7 +576,7 @@ impl Display for CSFile {
         }
 
         for func in self.funcs.iter() {
-            writeln!(f, "{}[DllImport(\"{}\", CallingConvention = CallingConvention.Cdecl)]", INDENT, self.dll_name)?;
+            writeln!(f, "{}[DllImport(\"{}\", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]", INDENT, self.dll_name)?;
             writeln!(f, "{}{}\n", INDENT, func)?;
         }
         writeln!(f, "}}")
