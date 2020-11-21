@@ -624,7 +624,7 @@ impl Builder {
     /// 设置命名空间
     ///
     pub fn with_namespace<T: AsRef<str>>(mut self, namespace: T) -> Self {
-        self.class_name = String::from(namespace.as_ref());
+        self.namespace = String::from(namespace.as_ref());
         self
     }
 
