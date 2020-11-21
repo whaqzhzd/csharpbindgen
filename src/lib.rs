@@ -544,7 +544,7 @@ impl Display for CSFile {
         writeln!(f, "using System;")?;
         writeln!(f, "using System.Runtime.InteropServices;\n")?;
 
-        writeln!(f, "namespace {}", self.namespace)?;
+        writeln!(f, "namespace {} {{", self.namespace)?;
 
         for st in self.structs.iter() {
             writeln!(f, "{}", st)?;
