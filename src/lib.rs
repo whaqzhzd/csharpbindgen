@@ -420,6 +420,7 @@ impl Display for CSFunc {
 struct CSFile {
     class_name: String,
     dll_name: String,
+    namespace: String,
     consts: Vec<CSConst>,
     structs: Vec<Rc<CSStruct>>,
     funcs: Vec<CSFunc>,
@@ -428,10 +429,11 @@ struct CSFile {
 }
 
 impl CSFile {
-    pub fn new(class_name: String, dll_name: String) -> Self {
+    pub fn new(class_name: String, dll_name: String, namespace: String) -> Self {
         CSFile {
             class_name,
             dll_name,
+            namespace,
             consts: vec![],
             structs: vec![],
             funcs: vec![],
@@ -542,6 +544,8 @@ impl Display for CSFile {
         writeln!(f, "using System;")?;
         writeln!(f, "using System.Runtime.InteropServices;\n")?;
 
+        writeln!(f, "{}", self.namespace)?;
+
         for st in self.structs.iter() {
             writeln!(f, "{}", st)?;
         }
@@ -556,7 +560,11 @@ impl Display for CSFile {
         }
 
         for (name, d) in self.delegate_defs.iter() {
-            writeln!(f, "{}[UnmanagedFunctionPointer(CallingConvention.Cdecl)]",INDENT)?;
+            writeln!(
+                f,
+                "{}[UnmanagedFunctionPointer(CallingConvention.Cdecl)]",
+                INDENT
+            )?;
             write!(
                 f,
                 "{}{} delegate {} {}(",
@@ -579,6 +587,7 @@ impl Display for CSFile {
             writeln!(f, "{}[DllImport(\"{}\", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]", INDENT, self.dll_name)?;
             writeln!(f, "{}{}\n", INDENT, func)?;
         }
+        writeln!(f, "}}")?;
         writeln!(f, "}}")
     }
 }
@@ -588,6 +597,7 @@ impl Display for CSFile {
 /// [builder pattern]: https://doc.rust-lang.org/1.0.0/style/ownership/builders.html
 pub struct Builder {
     class_name: String,
+    namespace: String,
     dll_name: String,
     rust_code: String,
     sconfig: SymbolConfigManager,
@@ -602,11 +612,20 @@ impl Builder {
     /// * `rust_code` is the source Rust code to convert into C#.
     pub fn new<T: AsRef<str>>(dll_name: T, rust_code: String) -> Self {
         Builder {
+            namespace: String::from("RustNameSpace"),
             class_name: String::from("RustExports"),
             dll_name: String::from(dll_name.as_ref()),
             rust_code,
             sconfig: SymbolConfigManager::new(),
         }
+    }
+
+    ///
+    /// 设置命名空间
+    ///
+    pub fn with_namespace<T: AsRef<str>>(mut self, namespace: T) -> Self {
+        self.class_name = String::from(namespace.as_ref());
+        self
     }
 
     /// Sets the name of the C# class that will contain all exported functions.
@@ -641,7 +660,7 @@ impl Builder {
     /// Performs the conversion of source Rust code to C#.
     pub fn generate(self) -> Result<String> {
         let syntax = parse_file(&self.rust_code)?;
-        let mut program = CSFile::new(self.class_name, self.dll_name);
+        let mut program = CSFile::new(self.class_name, self.dll_name, self.namespace);
         program.populate_from_rust_file(&syntax, &self.sconfig)?;
         program.resolve_types()?;
         Ok(format!("{}", program))
